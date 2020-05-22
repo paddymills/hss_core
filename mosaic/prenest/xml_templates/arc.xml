@@ -1,0 +1,8 @@
+<Arc>
+  <CenterX>{{ attr.x }}</CenterX>
+  <CenterY>{{ attr.y }}</CenterY>
+  <Radius>{{ attr.rad }}</Radius>
+  <StartAngle>{{ attr.start }}</StartAngle>
+  <EndAngle>{{ attr.end }}</EndAngle>
+  <DirCCW>{{ attr.ccw }}</DirCCW>
+</Arc>

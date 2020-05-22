@@ -1,0 +1,20 @@
+query (
+    $board_id: Int!,
+    $item_ids: [Int],
+    $column_ids: [String]
+  ) {
+  complexity {
+    query,
+    after
+  },
+  boards (ids: [$board_id]) {
+    items (ids: $item_ids) {
+      name,
+      column_values (ids: $column_ids) {
+        id,
+        text,
+        value
+      }
+    }
+  }
+}

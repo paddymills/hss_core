@@ -1,0 +1,29 @@
+INFO:root:Namespace(analyze=False, args=[], caller='C:\\Users\\PMiller1\\code\\SlabPrenest.xlsm', export=False, fetch=True, job='1190232a', load=True, manual=False)
+INFO:root:                 Mark  Radius  Width  Detail_Length  Adjust_Length  ...  Num_Row  Space_Row  Space_Center      Grade  Item
+0    1190232A_G19E-b1       0     24       354.0000         0.0429  ...      NaN        NaN           NaN  A709-50T2  4013
+1    1190232A_G19E-b2       0     24       677.4375         0.0865  ...      NaN        NaN           NaN  A709-50T2  4001
+2    1190232A_G19E-b3       0     24       354.0136         0.0429  ...      NaN        NaN           NaN  A709-50T2  4013
+3    1190232A_G19E-t1       0     24       120.0000         0.0231  ...      NaN        NaN           NaN    A709-50  4020
+4    1190232A_G19E-t2       0     24       234.0000         0.0299  ...      NaN        NaN           NaN    A709-50  4019
+..                ...     ...    ...            ...            ...  ...      ...        ...           ...        ...   ...
+121  1190232A_G34H-b3       0     24       389.5625         0.0520  ...      NaN        NaN           NaN  A709-50T2  4006
+122  1190232A_G34H-b4       0     24       306.0070         0.0384  ...      NaN        NaN           NaN  A709-50T2  4015
+123  1190232A_G34H-t1       0     24       306.0000         0.0404  ...      NaN        NaN           NaN    A709-50  4016
+124  1190232A_G34H-t2       0     24       582.4375         0.0777  ...      NaN        NaN           NaN    A709-50  4011
+125  1190232A_G34H-t3       0     24       306.0070         0.0404  ...      NaN        NaN           NaN    A709-50  4016
+
+[126 rows x 18 columns]
+INFO:root:                 Mark  Radius  Width  Detail_Length  Adjust_Length  ...  Num_Row  Space_Row  Space_Center      Grade  Item
+0    1190232A_G19E-b1       0     24       354.0000         0.0429  ...      NaN        NaN           NaN  A709-50T2  4013
+1    1190232A_G19E-b2       0     24       677.4375         0.0865  ...      NaN        NaN           NaN  A709-50T2  4001
+2    1190232A_G19E-b3       0     24       354.0136         0.0429  ...      NaN        NaN           NaN  A709-50T2  4013
+3    1190232A_G19E-t1       0     24       120.0000         0.0231  ...      NaN        NaN           NaN    A709-50  4020
+4    1190232A_G19E-t2       0     24       234.0000         0.0299  ...      NaN        NaN           NaN    A709-50  4019
+..                ...     ...    ...            ...            ...  ...      ...        ...           ...        ...   ...
+121  1190232A_G34H-b3       0     24       389.5625         0.0520  ...      NaN        NaN           NaN  A709-50T2  4006
+122  1190232A_G34H-b4       0     24       306.0070         0.0384  ...      NaN        NaN           NaN  A709-50T2  4015
+123  1190232A_G34H-t1       0     24       306.0000         0.0404  ...      NaN        NaN           NaN    A709-50  4016
+124  1190232A_G34H-t2       0     24       582.4375         0.0777  ...      NaN        NaN           NaN    A709-50  4011
+125  1190232A_G34H-t3       0     24       306.0070         0.0404  ...      NaN        NaN           NaN    A709-50  4016
+
+[126 rows x 18 columns]

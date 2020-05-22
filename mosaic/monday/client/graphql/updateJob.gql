@@ -1,0 +1,15 @@
+mutation (
+  $board_id: Int!,
+  $job_id: Int!,
+  $column_id: String!,
+  $column_val: JSON!
+) {
+  change_column_value(
+    board_id: $board_id,
+    item_id: $job_id,
+    column_id: $column_id,
+    value: $column_val
+  ) {
+    id
+  }
+}
