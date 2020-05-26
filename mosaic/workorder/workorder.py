@@ -6,8 +6,8 @@ import logging
 from win32 import win32api
 from functools import partial
 
-import engineering_bom as eng
-from .config import config
+import mosaic.bom as eng
+from mosaic.config import config
 
 
 def determine_processing():
@@ -17,7 +17,7 @@ def determine_processing():
                 book.activate()
                 post_processing()
                 return
-    
+
     pre_processing()
 
 
@@ -27,11 +27,11 @@ def pre_processing():
     # 3) Get other work order data, if available (material grades and operations)
     # 4) Check for Charge Ref number
     # 5) Save
-    
+
     # get SSRS report
     wb = open_ssrs_report_file()
     assert wb is not None
-        
+
     # fill out grade, remark, and operations
     fill_in_data(wb.sheets[0])
 
@@ -39,7 +39,6 @@ def pre_processing():
     if wb.sheets[0].range('O2').value is None:
         win32api.MessageBox(wb.app.hwnd, 'Charge Ref number needs entered.')
     wb.save()
-
 
 
 def post_processing():
@@ -64,7 +63,8 @@ def open_ssrs_report_file():
 
     # no SSRS report file found
     if last_modified_path is None:
-        win32api.MessageBox(0, "Please download report from SSRS", "Report Not Found")
+        win32api.MessageBox(
+            0, "Please download report from SSRS", "Report Not Found")
         return None
 
     return xlwings.Book(last_modified_path)
@@ -83,12 +83,12 @@ def fill_in_data(sheet):
     op1 = header.index('Operation1')
     op2 = header.index('Operation2')
     op3 = header.index('Operation3')
-    
+
     # get engineering BOM dataand previous work order data
     # TODO: fetch engineering data on demand
     #   1) read JobStandards on first occurrence (if BOM not read)
     #   2) read BOM on first occurrence of part name not matching regex
-    eng.force_cvn_mode = True   
+    eng.force_cvn_mode = True
     eng_data = eng.get_part_data()
     archived_data = get_archived_work_order_data()
 
@@ -105,12 +105,12 @@ def fill_in_data(sheet):
                 item(grade).value = archived_data[part_name]['grade']
             elif part_name in eng_data.keys():
                 item(grade).value = eng_data[part_name].grade
-        
+
         if has_archive_data:
             item(remark).value = archived_data[part_name]['remark']
-            item(op1).value    = archived_data[part_name]['op1']
-            item(op2).value    = archived_data[part_name]['op2']
-            item(op3).value    = archived_data[part_name]['op3']
+            item(op1).value = archived_data[part_name]['op1']
+            item(op2).value = archived_data[part_name]['op2']
+            item(op3).value = archived_data[part_name]['op3']
 
         i += 1
 
