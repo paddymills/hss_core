@@ -4,7 +4,7 @@ import sys
 import xlwings
 
 from argparse import ArgumentParser
-from client import JobBoard, DevelopmentJobBoard
+from .client import JobBoard, DevelopmentJobBoard
 
 FROZEN = hasattr(sys, 'frozen')  # frozen
 if FROZEN:
@@ -28,7 +28,7 @@ job_board_type = DevelopmentJobBoard
 
 def init_argparser():
     parser = ArgumentParser()
-    
+
     parser.add_argument('-d',
                         '--dev',     action='store_true',        help='Execute on development instance')
     parser.add_argument('-r',
@@ -70,17 +70,18 @@ def update_job_board(jobs=None):
     # Early Start and Main Start dates
     i = 2
     sheet = wb.sheets['Dates']
-    while sheet.range(i,1).value:
+    while sheet.range(i, 1).value:
         job, early_start, main_start = sheet.range((i, 1), (i, 3)).value
-        
+
         if jobs and job in jobs:
-            job_board.update_job_data(job, early_start=early_start, main_start=main_start)
+            job_board.update_job_data(
+                job, early_start=early_start, main_start=main_start)
         i += 1
 
     # Project Manager
     i = 2
     sheet = wb.sheets['PM']
-    while sheet.range(i,1).value:
+    while sheet.range(i, 1).value:
         job, pm = sheet.range((i, 1), (i, 2)).value
 
         if jobs and job in jobs:
@@ -91,30 +92,30 @@ def update_job_board(jobs=None):
     i = 2
     sheet = wb.sheets['Products']
     job, products = None, list()
-    while sheet.range(i,2).value:
-        if sheet.range(i,1).value:
+    while sheet.range(i, 2).value:
+        if sheet.range(i, 1).value:
             if job:  # not first row
                 if jobs and job in jobs:
                     job_board.update_job_data(job, ','.join(products))
-            job = sheet.range(i,1).value
+            job = sheet.range(i, 1).value
             products = list()
 
-        products.append(sheet.range(i,2).value)
+        products.append(sheet.range(i, 2).value)
         i += 1
 
     # Fab Bays
     i = 2
     sheet = wb.sheets['Bays']
     job, bays = None, list()
-    while sheet.range(i,2).value:
-        if sheet.range(i,1).value:
+    while sheet.range(i, 2).value:
+        if sheet.range(i, 1).value:
             if job:  # not first row
                 if jobs and job in jobs:
                     job_board.update_job_data(job, ','.join(bays))
-            job = sheet.range(i,1).value
+            job = sheet.range(i, 1).value
             bays = list()
 
-        bays.append(sheet.range(i,2).value)
+        bays.append(sheet.range(i, 2).value)
         i += 1
 
     wb.save()

@@ -6,7 +6,8 @@ import logging
 from win32 import win32api
 from functools import partial
 
-import mosaic.bom as eng
+from mosaic.file_handlers import get_bom_data
+from mosaic.file_handlers import TagSchedule
 from mosaic.config import config
 
 
@@ -15,7 +16,7 @@ def determine_processing():
         for book in app.books:
             if book.name.startswith(config['Names']['SSRS_ReportName']):
                 book.activate()
-                post_processing()
+                post_processing(book)
                 return
 
     pre_processing()
@@ -41,11 +42,19 @@ def pre_processing():
     wb.save()
 
 
-def post_processing():
+def post_processing(wb):
+    js = '-'.join(wb.sheets[0].range('K2:L2').value)
+
     # 1) Save pre-subtotalled document
     # 2) Fill out ProductionDemand spreadsheet
     # 3) Fill out CDS(TagSchedule)
     # 4) Import WBS-split data
+
+    # fill out CDS(TagSchedule)
+    ts = TagSchedule(js)
+    ts.webs = []
+    ts.flanges = []
+    ts.code_delivery = []
 
     pass
 
