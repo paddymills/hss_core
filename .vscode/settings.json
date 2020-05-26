@@ -1,0 +1,12 @@
+{
+    "python.pythonPath": "venv-win\\Scripts\\python.exe",
+    "cSpell.words": [
+        "TAGSCHED",
+        "hssieng",
+        "lgfp",
+        "nargs",
+        "openpyxl",
+        "xlwings",
+        "zfill"
+    ]
+}
