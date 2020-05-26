@@ -27,7 +27,7 @@ class TagSchedule(Book):
     def init_file(self, file, **kwargs):
         super().__init__(file, **kwargs)
 
-    @ property
+    @property
     def webs(self):
         header = self.sheets['WEBS'].range("C1:N1").value
         header += self.sheets['WEBS'].range("O2:Q2").value
@@ -35,11 +35,11 @@ class TagSchedule(Book):
         return self.sheets['WEBS'].range("C4:P4").expand('down').value
 
     @webs.setter
-    def webs(self):
+    def webs(self, value):
         # update webs tab
         pass
 
-    @ property
+    @property
     def flanges(self):
         header = self.sheets['FLANGES'].range("C1:N1").value
         header += self.sheets['FLANGES'].range("O2:Q2").value
@@ -47,17 +47,17 @@ class TagSchedule(Book):
         return self.sheets['FLANGES'].range("C4:P4").expand('down').value
 
     @flanges.setter
-    def flanges(self):
+    def flanges(self, value):
         # update flanges tab
         pass
 
-    @ property
+    @property
     def code_delivery(self):
         header = self.sheets['CODE DELIVERY'].range("A1:G1").value
 
         return self.sheets['CODE DELIVERY'].range("A2:G2").expand('down').value
 
     @code_delivery.setter
-    def code_delivery(self):
+    def code_delivery(self, value):
         # update code delivery tab
         pass

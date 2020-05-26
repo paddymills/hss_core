@@ -1,8 +1,10 @@
 {
     "python.pythonPath": "venv-win\\Scripts\\python.exe",
     "cSpell.words": [
+        "HSSI",
         "SSRS",
         "TAGSCHED",
+        "hssfileserv",
         "hssieng",
         "hwnd",
         "lgfp",
