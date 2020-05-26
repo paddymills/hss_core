@@ -1,5 +1,5 @@
-from bom import *
-from flgdata import *
-from schedule import *
-from tagschedule import *
-from workorder import *
+import bom
+import flgdata
+import schedule
+import tagschedule
+import workorder
