@@ -16,6 +16,9 @@
     "pyodbc",
     "sndb",
     "strftime",
+    "tagschedule",
+    "unsubtotalled",
+    "workorder",
     "xlsx",
     "xlwings",
     "zfill"
