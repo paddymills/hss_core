@@ -1,5 +1,3 @@
-# Hss Core
-
 core read, write and parsing utilities
 
 # TODO:

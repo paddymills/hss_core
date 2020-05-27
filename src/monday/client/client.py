@@ -2,9 +2,9 @@
 import os
 import json
 
-from inflection    import underscore
+from inflection import underscore
 from graphqlclient import GraphQLClient
-from datetime      import datetime, timezone
+from datetime import datetime, timezone
 
 ROOT_DIRECTORY = os.path.realpath(os.path.dirname(__file__))
 
@@ -32,14 +32,17 @@ class MondayBoardClient(GraphQLClient):
         for script in os.scandir(os.path.join(ROOT_DIRECTORY, 'graphql')):
             self.add_script(script.name, script.path)
 
-
     def inject_token(self, token):
-        if os.path.exists(token):
+        if os.path.exists(token):  # token is path to file
             with open(token, 'r') as token_file_stream:
                 token = token_file_stream.readline()
+        else:  # token is environment variable
+            try:
+                token = os.environ[token]
+            except KeyError:
+                pass
 
         self.inject_token(token)
-
 
     def init_board(self, board_name):
         # get board by name
@@ -48,7 +51,7 @@ class MondayBoardClient(GraphQLClient):
             if board['name'] == board_name:
                 self.board_id = board['id']
                 break
-                
+
         # get group and column ids
         response = self.execute('get_board_config', board_id=self.board_id)
         for group in response['groups']:
@@ -57,8 +60,8 @@ class MondayBoardClient(GraphQLClient):
         for column in response['columns']:
             val = dict(id=column['id'], type=column['type'])
             self.columns[column['title']] = val
-            self.columns[underscore(column['title'].replace(' ',''))] = val  # Early Start -> early_start
-
+            # Early Start -> early_start
+            self.columns[underscore(column['title'].replace(' ', ''))] = val
 
     def execute(self, query, variables=dict(), **kwargs):
         variables.update(kwargs)
@@ -80,12 +83,10 @@ class MondayBoardClient(GraphQLClient):
 
         return response
 
-
     def add_script(self, script_name, script_file):
         script_name = underscore(script_name.split('.')[0])
         with open(script_file, 'r') as script_file_stream:
             self.scripts[script_name] = script_file_stream.read()
-
 
     def get_complexity(self):
         return self.execute('get_complexity')

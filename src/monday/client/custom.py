@@ -24,7 +24,7 @@ class JobBoard(MondayBoardClient):
         init_kwargs = dict(
             endpoint='https://api.monday.com/v2',
             board_name='Jobs',
-            token=os.path.join(ROOT_DIRECTORY, 'monday.token'),
+            token='MONDAY_TOKEN',  # user environment variable
             skip_groups=['Jobs Completed Through PC'],
         )
         init_kwargs.update(kwargs)
