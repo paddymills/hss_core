@@ -6,7 +6,7 @@ import logging
 from win32 import win32api
 from functools import partial
 
-from mosaic.io.bom import BomData
+from mosaic.io.bom import BomDataCollector
 from mosaic.io.tagschedule import TagSchedule
 from mosaic.config import config
 
@@ -98,7 +98,7 @@ def fill_in_data(sheet):
     #   1) read JobStandards on first occurrence (if BOM not read)
     #   2) read BOM on first occurrence of part name not matching regex
     eng.force_cvn_mode = True
-    bom = BomData(*sheet.range('K2:L2').value)
+    bom = BomDataCollector(*sheet.range('K2:L2').value)
     archived_data = get_archived_work_order_data()
 
     i = 2
@@ -112,8 +112,8 @@ def fill_in_data(sheet):
         if update_grade:
             if has_archive_data:
                 item(grade).value = archived_data[part_name]['grade']
-            elif part_name in eng_data.keys():
-                item(grade).value = eng_data[part_name].grade
+            else:
+                item(grade).value = bom.get_part_data(part_name)
 
         if has_archive_data:
             item(remark).value = archived_data[part_name]['remark']
