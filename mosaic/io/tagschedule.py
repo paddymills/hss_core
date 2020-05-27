@@ -9,8 +9,12 @@ TEMPLATE = join(TAGSCHED_DIR, "TagSchedule_Template.xls")
 
 class TagSchedule(Book):
 
-    def __init__(self, job_shipment, **kwargs):
+    def __init__(self, job=None, shipment=None, job_shipment=None, **kwargs):
+        if job and shipment:
+            job_shipment = '{}-{}'.format(job, int(shipment))
         self.job_shipment = job_shipment
+        assert self.job_shipment is not None
+
         self.job_year = '20' + self.job_shipment[1:3].zfill(2)
 
         self.year_folder = join(TAGSCHED_DIR, self.job_year)
