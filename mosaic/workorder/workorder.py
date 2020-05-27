@@ -10,11 +10,14 @@ from mosaic.io.bom import BomDataCollector
 from mosaic.io.tagschedule import TagSchedule
 from mosaic.config import config
 
+SSRS_REPORT_NAME = "SigmaNest Work Order"
+WORKORDER_SHEET_NAME = "WorkOrders_Template"
+
 
 def determine_processing():
     for app in xlwings.apps:  # active excel applications
         for book in app.books:
-            if book.name.startswith(config['Names']['SSRS_ReportName']):
+            if book.name.startswith(SSRS_REPORT_NAME):
                 book.activate()
                 post_processing(book)
                 return
@@ -29,34 +32,44 @@ def pre_processing():
     # 4) Check for Charge Ref number
     # 5) Save
 
-    # get SSRS report
+    # 1) Open SSRS exported report
     wb = open_ssrs_report_file()
     assert wb is not None
 
-    # fill out grade, remark, and operations
+    # 2) Get engineering BOM data (material grades)
+    # 3) Get other work order data, if available (material grades and operations)
     fill_in_data(wb.sheets[0])
 
-    # ensure charge ref number is valid
+    # 4) Check for Charge Ref number
+    header = wb.sheets[0].range('A1').expand('right').value
+    index = header.index("ChargeRefNumber")
+
     if wb.sheets[0].range('O2').value is None:
         win32api.MessageBox(wb.app.hwnd, 'Charge Ref number needs entered.')
+
+    # 5) Save
     wb.save()
 
 
 def post_processing(wb):
-    js = '-'.join(wb.sheets[0].range('K2:L2').value)
-
     # 1) Save pre-subtotalled document
     # 2) Fill out ProductionDemand spreadsheet
     # 3) Fill out CDS(TagSchedule)
     # 4) Import WBS-split data
 
-    # fill out CDS(TagSchedule)
+    js = '-'.join(wb.sheets[0].range('K2:L2').value)
+
+    # 1) Save pre-subtotalled document
+
+    # 2) Fill out ProductionDemand spreadsheet
+
+    # 3) Fill out CDS(TagSchedule)
     ts = TagSchedule(js)
     ts.webs = []
     ts.flanges = []
     ts.code_delivery = []
 
-    pass
+    # 4) Import WBS-split data
 
 
 def open_ssrs_report_file():
@@ -64,8 +77,8 @@ def open_ssrs_report_file():
     last_modified_path = None
 
     # scan through folder looking for most recent SSRS report file
-    for dir_entry in os.scandir(config['Paths']['Downloads']):
-        if dir_entry.name.startswith(config['Names']['SSRS_ReportName']):
+    for dir_entry in os.scandir(os.path.expanduser(r"~\Downloads")):
+        if dir_entry.name.startswith(WORKORDER_SHEET_NAME):
             if dir_entry.stat().st_mtime > last_modified:
                 last_modified = dir_entry.stat().st_mtime
                 last_modified_path = dir_entry.path
