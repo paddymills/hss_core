@@ -11,6 +11,7 @@
         "lgfp",
         "nargs",
         "openpyxl",
+        "pyodbc",
         "xlwings",
         "zfill"
     ]
