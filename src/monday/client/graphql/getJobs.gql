@@ -1,0 +1,14 @@
+query ($board_id: Int!, $group_ids: [String]) {
+  complexity {
+    query,
+    after
+  },
+  boards (ids: [$board_id]) {
+    groups (ids: $group_ids) {
+      items {
+        id,
+        name
+      }
+    }
+  }
+}

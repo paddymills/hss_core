@@ -1,4 +1,0 @@
-<Point>
-  <X>{{ attr.x }}</X>
-  <Y>{{ attr.y }}</Y>
-</Point>
