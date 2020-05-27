@@ -3,11 +3,11 @@ import os
 import json
 import re
 
-from inflection    import underscore
-from datetime      import datetime
-from functools     import partial
+from inflection import underscore
+from datetime import datetime
+from functools import partial
 
-from client import MondayBoardClient
+from client import MondayBoardClient, js_utc_now
 
 ROOT_DIRECTORY = os.path.realpath(os.path.dirname(__file__))
 
@@ -16,6 +16,8 @@ ROOT_DIRECTORY = os.path.realpath(os.path.dirname(__file__))
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
 # the Jobs board
+
+
 class JobBoard(MondayBoardClient):
 
     def __init__(self, **kwargs):
@@ -36,7 +38,7 @@ class JobBoard(MondayBoardClient):
         )
 
         self.init_job_board()
-    
+
     def init_job_board(self):
         response = self.execute('get_jobs')
 
@@ -44,16 +46,14 @@ class JobBoard(MondayBoardClient):
             for item in group['items']:
                 self.job_ids[item['name']] = int(item['id'])
 
-    
     def execute(self, query, **kwargs):
         # TODO: log updates
         return super().execute(query, board_id=self.board_id, group_ids=self.groups, **kwargs)
 
-    
     def update_job_data(self, job, **kwargs):
         job_id = self.get_job_id(job)
         exec_job = partial(self.execute, job_id=job_id)
-        
+
         for key, val in kwargs.items():
             if key in self.column_aliases:
                 key = self.column_aliases[key]
@@ -69,8 +69,8 @@ class JobBoard(MondayBoardClient):
             if data['text'] == val:
                 if column_type == 'date':
                     val = {'date': val, 'changed_at': js_utc_now()}
-                exec_job('update_job', column_id=column_id, column_val=json.dumps(val))
-
+                exec_job('update_job', column_id=column_id,
+                         column_val=json.dumps(val))
 
     def get_job_id(self, job):
         if job in self.job_ids:
@@ -79,14 +79,16 @@ class JobBoard(MondayBoardClient):
         JOB_REGEX = re.compile("[A-Z]-([0-9]{7})[A-Z]-([0-9]{1,2})")
         JOB_FORMAT = "{}-{:0>2}"
 
-        job_without_structure = JOB_FORMAT.format(*JOB_REGEX.match(job).groups())
+        job_without_structure = JOB_FORMAT.format(
+            *JOB_REGEX.match(job).groups())
         for _monday_job, _id in self.job_ids.items():
             match = JOB_REGEX.match(_monday_job)
-            if match: 
+            if match:
                 monday_job = JOB_FORMAT.format(*match.groups())
                 if monday_job == job_without_structure:
                     # update monday job name
-                    self.execute('update_job', job_id=_id, column_id='name', column_val=job)
+                    self.execute('update_job', job_id=_id,
+                                 column_id='name', column_val=job)
                     return _id
 
         return None

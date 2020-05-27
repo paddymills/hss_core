@@ -148,7 +148,7 @@ def display_many(data):
             continue
 
     rows = list()
-    rowPrefix = "NOT_INITIALZIED"
+    rowPrefix = "NOT_INITIALIZED"
     for key in sorted(table.keys()):
         if not key.startswith(rowPrefix):
             # add row and update rowPrefix
