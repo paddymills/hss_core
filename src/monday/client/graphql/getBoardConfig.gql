@@ -1,0 +1,17 @@
+query ($board_id: Int!) {
+  complexity {
+    query,
+    after
+  },
+  boards (ids: [$board_id]) {
+    columns {
+    	id,
+      title,
+      type
+    },
+    groups {
+      id,
+      title
+    }
+  }
+}

@@ -1,0 +1,10 @@
+query {
+  complexity {
+    query,
+    after
+  },
+  boards {
+    id,
+    name
+  }
+}

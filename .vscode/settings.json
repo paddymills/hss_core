@@ -1,17 +1,26 @@
 {
-    "python.pythonPath": "venv-win\\Scripts\\python.exe",
-    "cSpell.words": [
-        "HSSI",
-        "SSRS",
-        "TAGSCHED",
-        "hssfileserv",
-        "hssieng",
-        "hwnd",
-        "isalpha",
-        "lgfp",
-        "nargs",
-        "openpyxl",
-        "xlwings",
-        "zfill"
-    ]
+  "python.pythonPath": "c:\\Users\\PMiller1\\code\\hss\\core\\venv\\Scripts\\python.exe",
+  "cSpell.words": [
+    "HIIWINBL",
+    "HSSEDSSERV",
+    "HSSI",
+    "NOCUT",
+    "NOKERF",
+    "TAGSCHED",
+    "flgdata",
+    "hssfileserv",
+    "hssieng",
+    "isalpha",
+    "itertools",
+    "nargs",
+    "pyodbc",
+    "sndb",
+    "strftime",
+    "tagschedule",
+    "unsubtotalled",
+    "workorder",
+    "xlsx",
+    "xlwings",
+    "zfill"
+  ]
 }

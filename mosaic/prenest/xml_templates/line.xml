@@ -1,6 +1,0 @@
-<Line>
-  <StartX>{{ attr.start_x }}</StartX>
-  <StartY>{{ attr.start_y }}</StartY>
-  <EndX>{{ attr.end_x }}</EndX>
-  <EndY>{{ attr.end_y }}</EndY>
-</Line>
