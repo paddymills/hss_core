@@ -8,6 +8,7 @@
     "NOKERF",
     "TAGSCHED",
     "flgdata",
+    "getenv",
     "hssfileserv",
     "hssieng",
     "isalpha",

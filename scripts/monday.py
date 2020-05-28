@@ -16,7 +16,7 @@ from prodctrlcore.monday.custom import DevelopmentJobBoard, JobBoard
 BASE_DIR = dirname(realpath(__file__))
 DATA_FILE = join(BASE_DIR, "data", "Job Ship Dates.xlsx")
 
-timestamp = datetime.now().date.isoformat()
+timestamp = datetime.now().date().isoformat()
 LOG_FILE = join(BASE_DIR, "logs", '{}.log'.format(timestamp))
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO)
 
@@ -69,7 +69,7 @@ def main():
                 month, day = groups
                 year = datetime.now().year
 
-            args.file = datetime(year, month, day).date.isoformat()
+            args.file = datetime(year, month, day).date().isoformat()
             restore_file = log_file(args.file)
 
         else:

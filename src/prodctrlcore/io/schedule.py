@@ -4,7 +4,6 @@ import xlwings
 
 from collections import defaultdict
 from argparse import ArgumentParser
-from prodctrlcore.monday.client import JobBoard, DevelopmentJobBoard
 
 COST_CENTERS = {
     2005: "WB",
@@ -33,7 +32,7 @@ def get_update_data(xl_file):
     i = 2
     sheet = wb.sheets['PM']
     while sheet.range(i, 1).value:
-        job, pm = sheet.range(i, 1).value
+        job = sheet.range(i, 1).value
         jobs[job]['pm'] = sheet.range(i, 2).value
 
         i += 1
@@ -63,7 +62,10 @@ def get_update_data(xl_file):
             job = sheet.range(i, 1).value
             bays = list()
 
-        bays.append(COST_CENTERS[sheet.range(i, 2).value])
+        cc = sheet.range(i, 2).value
+        if type(cc) is str:
+            cc = int(cc)
+        bays.append(COST_CENTERS[cc])
         i += 1
 
     wb.save()

@@ -1,17 +1,19 @@
 
-import os
 import json
 import re
 
+from os import getenv
+from os.path import realpath, dirname
 from inflection import underscore
 from datetime import datetime
 from functools import partial
 
 import logging
 
-from client import MondayBoardClient, js_utc_now
+from .client import MondayBoardClient, js_utc_now
 
-ROOT_DIRECTORY = os.path.realpath(os.path.dirname(__file__))
+JOB_REGEX = re.compile("[A-Z]-([0-9]{7})[A-Z]?-([0-9]{1,2})")
+JOB_FORMAT = "{}-{:0>2}"
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 # convenience classes for accessing specific boards #
@@ -26,7 +28,7 @@ class JobBoard(MondayBoardClient):
         init_kwargs = dict(
             endpoint='https://api.monday.com/v2',
             board_name='Jobs',
-            token='MONDAY_TOKEN',  # user environment variable
+            token=getenv('MONDAY_TOKEN'),  # user environment variable
             skip_groups=['Jobs Completed Through PC'],
         )
         init_kwargs.update(kwargs)
@@ -44,17 +46,20 @@ class JobBoard(MondayBoardClient):
     def init_job_board(self):
         response = self.execute('get_jobs')
 
-        for group in response['boards'][0]['groups']:
+        for group in response['groups']:
             for item in group['items']:
                 self.job_ids[item['name']] = int(item['id'])
 
     def execute(self, query, **kwargs):
         # TODO: log updates
-        return super().execute(query, board_id=self.board_id, group_ids=self.groups, **kwargs)
+        return self._board_execute(query, board_id=self.board_id, group_ids=self.groups, **kwargs)
 
     def update_job_data(self, job, **kwargs):
         job_id = self.get_job_id(job)
         exec_job = partial(self.execute, job_id=job_id)
+
+        if job_id is None:
+            logging.error("Job not in monday.com active groups: " + job)
 
         for key, val in kwargs.items():
             if key in self.column_aliases:
@@ -67,7 +72,7 @@ class JobBoard(MondayBoardClient):
 
             # get job data
             response = exec_job('get_job_data', column_ids=[column_id])
-            data = response['boards'][0]['items'][0]['column_values'][0]
+            data = response['items'][0]['column_values'][0]
             if data['text'] != val:
                 if column_type == 'date':
                     val = {'date': val, 'changed_at': js_utc_now()}
@@ -75,16 +80,16 @@ class JobBoard(MondayBoardClient):
                 exec_job('update_job', column_id=column_id,
                          column_val=json.dumps(val))
                 logging.info(
-                    'UPDATE: [{}]{}->{}'.format(key, data['text'], val))
+                    'UPDATE: [{}/{}]{}->{}'.format(job, key, data['text'], val))
 
-            logging.info('SKIP: [{}]{}'.format(key, data['text']))
+            logging.info('SKIP: [{}/{}]{}'.format(job, key, data['text']))
 
     def get_job_id(self, job):
         if job in self.job_ids:
-            return job_ids[job]
+            return self.job_ids[job]
 
-        JOB_REGEX = re.compile("[A-Z]-([0-9]{7})[A-Z]-([0-9]{1,2})")
-        JOB_FORMAT = "{}-{:0>2}"
+        # JOB_REGEX = re.compile("[A-Z]-([0-9]{7})[A-Z]?-([0-9]{1,2})")
+        # JOB_FORMAT = "{}-{:0>2}"
 
         job_without_structure = JOB_FORMAT.format(
             *JOB_REGEX.match(job).groups())
@@ -104,4 +109,4 @@ class JobBoard(MondayBoardClient):
 class DevelopmentJobBoard(JobBoard):
 
     def __init__(self, **kwargs):
-        super().__init__(board_id='Development', **kwargs)
+        super().__init__(board_name='Development', **kwargs)
