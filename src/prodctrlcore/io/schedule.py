@@ -6,9 +6,6 @@ from collections import defaultdict
 from argparse import ArgumentParser
 from prodctrlcore.monday.client import JobBoard, DevelopmentJobBoard
 
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-DATA_FILE = os.path.join(BASE_DIR, "Job Ship Dates.xlsx")
-
 COST_CENTERS = {
     2005: "WB",
     2006: "NB",
@@ -17,50 +14,9 @@ COST_CENTERS = {
     2031: "MBS",
 }
 
-# JobBoardType = JobBoard
-JobBoardType = DevelopmentJobBoard
 
-
-def init_argparser():
-    parser = ArgumentParser()
-
-    parser.add_argument('-d',
-                        '--dev',     action='store_true',        help='Execute on development instance')
-    parser.add_argument('-r',
-                        '--restore', action='store_true',        help='Execute restore mode')
-    parser.add_argument('-f',
-                        '--file',    action='store',             help='File to restore(restore flag only)')
-    parser.add_argument('-j',
-                        '--jobs',
-                        '--job',     action='extend', nargs='*', help='Jobs to update/restore')
-
-    return parser.parse_args()
-
-
-def main():
-    args = init_argparser()
-
-    if args.dev:
-        JobBoardType = DevelopmentJobBoard
-
-    if args.restore:
-        # get file
-        if args.file == 'last':
-            restore_file = 'most recent file'
-        else:
-            restore_file = args.restore
-
-        with open(restore_file, 'r') as restore_file_stream:
-            data = restore_file_stream.read()
-        # restore_job_board(data, args.jobs)
-    else:
-        print("Update")
-        # update_job_board(args.jobs)
-
-
-def update_job_board(jobs=None):
-    job_board = JobBoardType()
-    wb = xlwings.Book(DATA_FILE)
+def get_update_data(xl_file):
+    wb = xlwings.Book(xl_file)
     jobs = defaultdict(dict)
 
     # Early Start and Main Start dates
@@ -89,7 +45,7 @@ def update_job_board(jobs=None):
     while sheet.range(i, 2).value:
         if sheet.range(i, 1).value:
             if job:  # not first row
-                jobs[job]['text6'] = ','.join(products)
+                jobs[job]['product'] = ','.join(products)
             job = sheet.range(i, 1).value
             products = list()
 
@@ -103,16 +59,12 @@ def update_job_board(jobs=None):
     while sheet.range(i, 2).value:
         if sheet.range(i, 1).value:
             if job:  # not first row
-                jobs[job]['text2'] = ','.join(bays)
+                jobs[job]['bay'] = ','.join(bays)
             job = sheet.range(i, 1).value
             bays = list()
 
-        bays.append(sheet.range(i, 2).value)
+        bays.append(COST_CENTERS[sheet.range(i, 2).value])
         i += 1
-
-    # update monday.com board
-    for job, kwargs in jobs.items():
-        job_board.update_job_data(job, **kwargs)
 
     wb.save()
     if len(wb.app.books) > 1:
@@ -120,10 +72,4 @@ def update_job_board(jobs=None):
     else:
         wb.app.quit()
 
-
-def restore_job_board(data, jobs=None):
-    job_board = JobBoardType()
-
-
-if __name__ == "__main__":
-    main()
+    return jobs
