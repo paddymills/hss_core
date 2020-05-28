@@ -7,6 +7,8 @@ from inflection import underscore
 from datetime import datetime
 from functools import partial
 
+import logging
+
 from client import MondayBoardClient, js_utc_now
 
 ROOT_DIRECTORY = os.path.realpath(os.path.dirname(__file__))
@@ -66,11 +68,16 @@ class JobBoard(MondayBoardClient):
             # get job data
             response = exec_job('get_job_data', column_ids=[column_id])
             data = response['boards'][0]['items'][0]['column_values'][0]
-            if data['text'] == val:
+            if data['text'] != val:
                 if column_type == 'date':
                     val = {'date': val, 'changed_at': js_utc_now()}
+
                 exec_job('update_job', column_id=column_id,
                          column_val=json.dumps(val))
+                logging.info(
+                    'UPDATE: [{}]{}->{}'.format(key, data['text'], val))
+
+            logging.info('SKIP: [{}]{}'.format(key, data['text']))
 
     def get_job_id(self, job):
         if job in self.job_ids:

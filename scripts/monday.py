@@ -84,8 +84,7 @@ def main():
         # restore_job_board(updates)
 
     else:
-        print("Update")
-        # update_job_board()
+        update_job_board()
 
 
 def log_file(log_file_name):
@@ -106,7 +105,8 @@ def update_job_board():
 
 def parse_log_file(log_file):
     with open(restore_file, 'r') as restore_file_stream:
-        data = restore_file_stream.read()
+        for line in restore_file_stream:
+            pass
 
 
 def restore_job_board(data):

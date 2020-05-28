@@ -6,6 +6,8 @@ from inflection import underscore
 from graphqlclient import GraphQLClient
 from datetime import datetime, timezone
 
+import logging
+
 ROOT_DIRECTORY = os.path.realpath(os.path.dirname(__file__))
 
 
@@ -76,9 +78,8 @@ class MondayBoardClient(GraphQLClient):
 
             return response['data']['boards']
         elif "errors" in response.keys():
-            # TODO: log errors
-            #     response['errors']['message']
-            # and response['errors']['problems']['explanation']
+            logging.error(response['errors']['message'])
+            logging.error(response['errors']['problems']['explanation'])
             return response['errors']
 
         return response
