@@ -22,26 +22,34 @@ def get_update_data(xl_file):
     i = 2
     sheet = wb.sheets['Dates']
     while sheet.range(i, 1).value:
+        print("\r[{}] Reading Dates".format(i-1), end='')
+
         job = sheet.range(i, 1).value
         jobs[job]['early_start'] = sheet.range(i, 2).value
         jobs[job]['main_start'] = sheet.range(i, 3).value
 
         i += 1
+    print()
 
     # Project Manager
     i = 2
     sheet = wb.sheets['PM']
     while sheet.range(i, 1).value:
+        print("\r[{}] Reading PM's".format(i-1), end='')
+
         job = sheet.range(i, 1).value
         jobs[job]['pm'] = sheet.range(i, 2).value
 
         i += 1
+    print()
 
     # Products/Types
     i = 2
     sheet = wb.sheets['Products']
     job, products = None, list()
     while sheet.range(i, 2).value:
+        print("\r[{}] Reading Products".format(i-1), end='')
+
         if sheet.range(i, 1).value:
             if job:  # not first row
                 jobs[job]['product'] = ','.join(products)
@@ -50,12 +58,15 @@ def get_update_data(xl_file):
 
         products.append(sheet.range(i, 2).value)
         i += 1
+    print()
 
     # Fab Bays
     i = 2
     sheet = wb.sheets['Bays']
     job, bays = None, list()
     while sheet.range(i, 2).value:
+        print("\r[{}] Reading Bays".format(i-1), end='')
+
         if sheet.range(i, 1).value:
             if job:  # not first row
                 jobs[job]['bay'] = ','.join(bays)
@@ -67,6 +78,7 @@ def get_update_data(xl_file):
             cc = int(cc)
         bays.append(COST_CENTERS[cc])
         i += 1
+    print()
 
     wb.save()
     if len(wb.app.books) > 1:

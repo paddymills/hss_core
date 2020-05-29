@@ -11,6 +11,8 @@ import logging
 
 ROOT_DIRECTORY = realpath(dirname(__file__))
 
+logger = logging.getLogger(__name__)
+
 
 class MondayBoardClient(GraphQLClient):
 
@@ -72,18 +74,23 @@ class MondayBoardClient(GraphQLClient):
             query = self.scripts[query]
 
         response = json.loads(
-            super(MondayBoardClient, self).execute(query, variables))
+            super().execute(query, variables))
 
         if "data" in response.keys():
             if "complexity" in response['data'].keys():
                 self.complexity = response['data']['complexity']['after']
+                logger.info("COMPLEXITY:{}".format(self.complexity))
 
-            if len(response['data']['boards']) == 1:
-                return response['data']['boards'][0]
-            return response['data']['boards']
+            if 'boards' in response['data'].keys():
+                if len(response['data']['boards']) == 1:
+                    return response['data']['boards'][0]
+                return response['data']['boards']
+
+            return response['data']
+
         elif "errors" in response.keys():
             for err in response['errors']:
-                logging.error(err)
+                logger.error(err)
             return response['errors']
 
         return response

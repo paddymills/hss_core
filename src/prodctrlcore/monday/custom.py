@@ -12,6 +12,8 @@ import logging
 
 from .client import MondayBoardClient, js_utc_now
 
+logger = logging.getLogger(__name__)
+
 JOB_REGEX = re.compile("[A-Z]-([0-9]{7})[A-Z]?-([0-9]{1,2})")
 JOB_FORMAT = "{}-{:0>2}"
 
@@ -44,7 +46,7 @@ class JobBoard(MondayBoardClient):
         self.init_job_board()
 
     def init_job_board(self):
-        response = self.execute('get_jobs')
+        response = self.execute('get_jobs', group_ids=self.groups)
 
         for group in response['groups']:
             for item in group['items']:
@@ -52,14 +54,15 @@ class JobBoard(MondayBoardClient):
 
     def execute(self, query, **kwargs):
         # TODO: log updates
-        return self._board_execute(query, board_id=self.board_id, group_ids=self.groups, **kwargs)
+        return self._board_execute(query, board_id=self.board_id, **kwargs)
 
     def update_job_data(self, job, **kwargs):
         job_id = self.get_job_id(job)
         exec_job = partial(self.execute, job_id=job_id)
 
         if job_id is None:
-            logging.error("Job not in monday.com active groups: " + job)
+            logger.error("Job not in monday.com active groups: " + job)
+            return
 
         for key, val in kwargs.items():
             if key in self.column_aliases:
@@ -79,10 +82,12 @@ class JobBoard(MondayBoardClient):
 
                 exec_job('update_job', column_id=column_id,
                          column_val=json.dumps(val))
-                logging.info(
-                    'UPDATE: [{}/{}]{}->{}'.format(job, key, data['text'], val))
-
-            logging.info('SKIP: [{}/{}]{}'.format(job, key, data['text']))
+                update_type = "UPDATE"
+            else:
+                update_type = 'SKIP'
+                val = data['text']
+            logger.info(
+                '{}:{}/{}:{}->{}'.format(update_type, job, key, data['text'], val))
 
     def get_job_id(self, job):
         if job in self.job_ids:
@@ -98,9 +103,11 @@ class JobBoard(MondayBoardClient):
             if match:
                 monday_job = JOB_FORMAT.format(*match.groups())
                 if monday_job == job_without_structure:
-                    # update monday job name
-                    self.execute('update_job', job_id=_id,
-                                 column_id='name', column_val=job)
+                    # # update monday job name
+                    # logger.info("Updating job name: {} -> {}".format(_monday_job, job))
+                    # self.execute('update_job', job_id=_id, column_id='name', column_val=job)
+                    # # Did not work. I think it is because 'name' is not a column_value
+
                     return _id
 
         return None
