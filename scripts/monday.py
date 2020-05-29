@@ -106,7 +106,7 @@ def log_file(log_file_name):
 def update_job_board(jobs=None):
     job_board = JobBoardType()
 
-    if jobs in None:
+    if jobs is None:
         jobs = schedule.get_update_data(DATA_FILE)
 
     # update monday.com board
