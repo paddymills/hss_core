@@ -14,8 +14,6 @@ from prodctrlcore.monday.custom import DevelopmentJobBoard, JobBoard
 
 from collections import defaultdict
 
-from pprint import pprint
-
 BASE_DIR = dirname(realpath(__file__))
 DATA_FILE = join(BASE_DIR, "data", "Job Ship Dates.xlsx")
 
