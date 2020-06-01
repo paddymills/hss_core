@@ -5,7 +5,7 @@ setup(
     version=0.2,
     packages=find_packages("src"),
     package_dir={"": "src"},
-    include_package_date=True,
+    include_package_data=True,
     install_requires=[
         "xlwings>=0.19.4",
         "pyodbc>=4.0.30",
