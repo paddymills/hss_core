@@ -5,6 +5,8 @@ import xlwings
 from collections import defaultdict
 from argparse import ArgumentParser
 
+from time import sleep
+
 COST_CENTERS = {
     2005: "WB",
     2006: "NB",
@@ -14,8 +16,9 @@ COST_CENTERS = {
 }
 
 
-def get_update_data(xl_file):
+def get_update_data(xl_file, data_connection_name="High Steel Scheduling"):
     wb = xlwings.Book(xl_file)
+    wb.api.Connections(data_connection_name).Refresh()
     jobs = defaultdict(dict)
 
     # Early Start and Main Start dates
