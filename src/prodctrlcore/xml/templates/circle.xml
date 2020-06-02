@@ -1,0 +1,5 @@
+<Circle>
+  <CenterX>{{ attr.x }}</CenterX>
+  <CenterY>{{ attr.y }}</CenterY>
+  <Diameter>{{ attr.dia }}</Diameter>
+</Circle>

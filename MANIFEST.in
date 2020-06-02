@@ -1,1 +1,2 @@
 include src/prodctrlcore/monday/graphql/*.gql
+include src/prodctrlcore/xml/templates/*

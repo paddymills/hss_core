@@ -1,0 +1,7 @@
+<Note>
+  <LowerLeftX>{{ attr.x }}</LowerLeftX>
+  <LowerLeftY>{{ attr.y }}</LowerLeftY>
+  <NoteString>{{ attr.text }}</NoteString>
+  <NoteAngle>{{ attr.angle }}</NoteAngle>
+  <NoteSize>{{ attr.size }}</NoteSize>
+</Note>
