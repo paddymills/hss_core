@@ -11,10 +11,9 @@ from re import compile as regex
 
 from prodctrlcore.io import schedule
 from prodctrlcore.monday.custom import DevelopmentJobBoard, JobBoard
+from prodctrlcore.utils import CountingIter
 
 from collections import defaultdict
-
-from pprint import pprint
 
 BASE_DIR = dirname(realpath(__file__))
 DATA_FILE = join(BASE_DIR, "data", "Job Ship Dates.xlsx")
@@ -109,22 +108,17 @@ def update_job_board(jobs=None):
     job_board = JobBoardType()
 
     if jobs is None:
-        jobs = schedule.get_update_data(DATA_FILE)
+        jobs = schedule.get_job_ship_dates(DATA_FILE)
 
     # update monday.com board
-    i = 1
-    total = len(jobs)
+    iter = CountingIter(jobs.items(), total=True)
     for job, kwargs in jobs.items():
-        print("\r[{}/{}] Running updates".format(i, total), end='')
-        # logger.info("Updating Job: [{}] {}".format(job, kwargs))
         job_board.update_job_data(job, **kwargs)
-
-        i += 1
 
 
 def parse_log_file(log_file):
     LOGGING_FORMAT = regex(
-        r"(?P<msg_type>[A-Z]+):(?P<logger>[\w.]):(?P<update_type>\w):(?P<job>[\w-])/(?P<column>\w):(?P<old_val>.)->(?P<new_val>.)")
+        r"(?P<level>[A-Z]+):(?P<logger>[\w.]+):(?P<type>\w+):(?P<job>[\w-]+)/(?P<column>\w+):(?P<old_val>.+)->(?P<new_val>.+)")
     # INFO:prodctrlcore.monday.custom:UPDATE:D-1160253C-04/main_start:None->{'date': '2020-11-25', 'changed_at': '2020-05-29T14:19:10.745Z'}
 
     jobs = defaultdict(dict)
@@ -133,8 +127,10 @@ def parse_log_file(log_file):
         for line in restore_file_stream:
             match = LOGGING_FORMAT.match(line)
             if match:
-                m_g = match.groups
-                jobs[m_g('job')][m_g('column')] = m_g('old_val')
+                job, col, val = match.group(['job', 'column', 'old_val'])
+                if val == 'None':
+                    val = None
+                jobs[job][col] = val
 
     return jobs
 
