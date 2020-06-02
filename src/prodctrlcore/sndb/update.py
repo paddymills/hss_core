@@ -5,11 +5,10 @@ import pyodbc
 import re
 from datetime import datetime
 
-cs = "DRIVER={SQL Server};SERVER=HIIWINBL18;UID=SNUser;PWD=BestNest1445;"
-sndb_conn = pyodbc.connect(cs + 'DATABASE=SNDBase91')
-oys_conn = pyodbc.connect(cs + 'DATABASE=OYSProgramUpdate')
+from prodctrlcore.io.db import get_sndb_conn
+
+sndb_conn = get_sndb_conn()
 sndb = sndb_conn.cursor()
-oys = oys_conn.cursor()
 
 
 def main():
@@ -55,7 +54,6 @@ def main():
             print(ret + '\n')
 
     sndb_conn.close()
-    oys_conn.close()
 
 
 # arg :: UH >> update heat number, PO number and SAP MM if given

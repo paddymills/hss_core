@@ -6,6 +6,8 @@ import sys
 
 from datetime import datetime
 
+from prodctrlcore.io.db import get_sndb_conn
+
 import cli_stream
 import updatedPrograms
 
@@ -15,8 +17,7 @@ def formatDateTime(x): return datetime.strftime(x, '%m/%d/%Y %H:%M')
 
 REPLACEMENTS = ['*', '#', '+']
 
-cs = "DRIVER={SQL Server};SERVER=HIIWINBL18;DATABASE=SNDBase91;UID=SNUser;PWD=BestNest1445;"
-conn = pyodbc.connect(cs)
+conn = get_sndb_conn()
 cur = conn.cursor()
 
 

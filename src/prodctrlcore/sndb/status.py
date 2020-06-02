@@ -7,16 +7,19 @@ import datetime as dt
 from collections import defaultdict
 from itertools import zip_longest, islice
 
+from prodctrlcore.io.db import get_sndb_conn
+
 
 def formatDateTime(x): return dt.datetime.strftime(x, '%m/%d/%Y %H:%M')
 
 
-cs = "DRIVER={SQL Server};SERVER=HIIWINBL18;UID=SNUser;PWD=BestNest1445;"
-conn = pyodbc.connect(cs)
+conn = get_sndb_conn()
 cur = conn.cursor()
 
 lastProgram = None
 
+
+# TODO: remove OYSUpdatedPrograms dependency
 
 def check_status(prog, cursor=None):
     cur = cursor or conn.cursor()
