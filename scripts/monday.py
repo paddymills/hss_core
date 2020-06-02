@@ -118,7 +118,7 @@ def update_job_board(jobs=None):
 
 def parse_log_file(log_file):
     LOGGING_FORMAT = regex(
-        r"(?P<msg_type>[A-Z]+):(?P<logger>[\w.]):(?P<update_type>\w):(?P<job>[\w-])/(?P<column>\w):(?P<old_val>.)->(?P<new_val>.)")
+        r"(?P<level>[A-Z]+):(?P<logger>[\w.]+):(?P<type>\w+):(?P<job>[\w-]+)/(?P<column>\w+):(?P<old_val>.+)->(?P<new_val>.+)")
     # INFO:prodctrlcore.monday.custom:UPDATE:D-1160253C-04/main_start:None->{'date': '2020-11-25', 'changed_at': '2020-05-29T14:19:10.745Z'}
 
     jobs = defaultdict(dict)
@@ -127,8 +127,10 @@ def parse_log_file(log_file):
         for line in restore_file_stream:
             match = LOGGING_FORMAT.match(line)
             if match:
-                m_g = match.groups
-                jobs[m_g('job')][m_g('column')] = m_g('old_val')
+                job, col, val = match.group(['job', 'column', 'old_val'])
+                if val == 'None':
+                    val = None
+                jobs[job][col] = val
 
     return jobs
 
