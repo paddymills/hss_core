@@ -8,8 +8,7 @@ SNDB_PRD = "HIIWINBL18"
 SNDB_DEV = "HIIWINBL5"
 
 CONN_STR_TEMPLATE = Template(
-    "DRIVER={$driver};SERVER=$server;UID=$user;PWD=$pwd;")
-DB_TEMPLATE = Template("DATABASE=$db;")
+    "DRIVER={$driver};SERVER=$server;UID=$user;PWD=$pwd;DATABASE=$db;")
 
 cs_kwargs = dict(
     driver="SQL Server",
