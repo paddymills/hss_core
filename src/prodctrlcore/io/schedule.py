@@ -16,7 +16,7 @@ COST_CENTERS = {
 }
 
 
-def get_update_data(xl_file, data_connection_name="High Steel Scheduling"):
+def get_job_ship_dates(xl_file, data_connection_name="High Steel Scheduling"):
     jobs = defaultdict(dict)
     wb = xlwings.Book(xl_file)
 
@@ -24,20 +24,20 @@ def get_update_data(xl_file, data_connection_name="High Steel Scheduling"):
     wb.api.Connections(data_connection_name).Refresh()
 
     # Early Start and Main Start dates
-    data = wb.sheets['Dates'].range("A2:C2").expand('down').value
+    data = wb.sheets['Dates'].range("DATES_HEADER").expand('down').value
     iter = CountingIter(data, "Reading Dates")
     for job, early_start, main_start in iter:
         jobs[job]['early_start'] = early_start
         jobs[job]['main_start'] = main_start
 
     # Project Manager
-    data = wb.sheets['PM'].range("A2:B2").expand('down').value
+    data = wb.sheets['PM'].range("PM_HEADER").expand('down').value
     iter = CountingIter(data, "Reading PM's")
     for job, pm in iter:
         jobs[job]['pm'] = pm
 
     # Products/Types
-    data = wb.sheets['Products'].range("A2:B2").expand('down').value
+    data = wb.sheets['Products'].range("PRODUCTS_HEADER").expand('down').value
     iter = CountingIter(data, "Reading Products")
     prev_job, products = None, list()
     for job, product in iter:
@@ -48,7 +48,7 @@ def get_update_data(xl_file, data_connection_name="High Steel Scheduling"):
         products.append(product)
 
     # Fab Bays
-    data = wb.sheets['Bays'].range("A2:B2").expand('down').value
+    data = wb.sheets['Bays'].range("BAYS_HEADER").expand('down').value
     iter = CountingIter(data, "Reading Bays")
     prev_job, bays = None, list()
     for job, cc in iter:

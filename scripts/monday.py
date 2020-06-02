@@ -11,6 +11,7 @@ from re import compile as regex
 
 from prodctrlcore.io import schedule
 from prodctrlcore.monday.custom import DevelopmentJobBoard, JobBoard
+from prodctrlcore.utils import CountingIter
 
 from collections import defaultdict
 
@@ -107,17 +108,12 @@ def update_job_board(jobs=None):
     job_board = JobBoardType()
 
     if jobs is None:
-        jobs = schedule.get_update_data(DATA_FILE)
+        jobs = schedule.get_job_ship_dates(DATA_FILE)
 
     # update monday.com board
-    i = 1
-    total = len(jobs)
+    iter = CountingIter(jobs.items(), total=True)
     for job, kwargs in jobs.items():
-        print("\r[{}/{}] Running updates".format(i, total), end='')
-        # logger.info("Updating Job: [{}] {}".format(job, kwargs))
         job_board.update_job_data(job, **kwargs)
-
-        i += 1
 
 
 def parse_log_file(log_file):

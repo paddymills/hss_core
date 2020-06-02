@@ -4,10 +4,14 @@ from string import Template
 
 class CountingIter:
 
-    def __init__(self, iter, caption="", run=True):
+    def __init__(self, iter, caption="", total=False):
         self._iter = iter
         self._index = 0
         self.template = Template("\r[$index] {}".format(caption))
+
+        if total:
+            self.template = Template(
+                "\r[$index/{}] {}".format(len(iter), caption))
 
     def __iter__(self):
         return self
