@@ -53,10 +53,17 @@ class HeaderParser:
         return index
 
     def _init_header(self):
-        for index, column in enumerate(self.header):
-            self.indexes[column] = index
-            self.indexes[column.lower()] = index
-            self.indexes[to_(column)] = index
+        if type(self.header[0]) is not list:
+            # header is single row
+            self.header = [self.header]
+
+        for row in self.header:
+            for index, column in enumerate(row):
+                if column:
+                    # not empty cell
+                    self.indexes[column] = index
+                    self.indexes[column.lower()] = index
+                    self.indexes[to_(column)] = index
 
     def parse_row(self, row):
         if type(row) is Range:
