@@ -59,9 +59,22 @@ class HeaderParser:
             for index, column in enumerate(row):
                 if column:
                     # not empty cell
-                    self.indexes[column] = index
-                    self.indexes[column.lower()] = index
-                    self.indexes[to_(column)] = index
+                    self.add_column_index(column, index)
+
+    def add_column_index(self, key, index):
+        self.indexes[key] = index
+        self.indexes[key.lower()] = index
+        self.indexes[to_(key)] = index
+
+    def add_header_aliases(self, mapping=dict(), **kwargs):
+        mapping.update(kwargs)
+        for k, v in mapping.items():
+            self.add_header_alias(k, v)
+
+    def add_header_alias(self, column, header_val):
+        index = self.get_index(header_val)
+
+        self.add_column_index(column, index)
 
     def parse_row(self, row):
         if type(row) is Range:

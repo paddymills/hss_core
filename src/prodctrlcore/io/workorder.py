@@ -8,10 +8,22 @@ from .header import HeaderParser
 WORKORDER_DIR = r"\\hssieng\DATA\HS\SAP - Material Master_BOM\SigmaNest Work Orders"
 TEMPLATE = join(WORKORDER_DIR, "TagSchedule_Template.xls")
 
+HEADER_ALIASES = {
+    'Part': 'ItemName',
+    'State': 'Customer',
+    'Job': 'ItemData1',
+    'Ship': 'ItemData2',
+    'Shipping Group': 'ItemData4',
+    'ChargeRefNumber': 'SAP Network Number',
+    'Mark': 'Operation5',
+    'MaterialMaster': 'Operation6',
+    'HeatMarkKeyWord': 'Operation10'
+}
+
 
 class WorkOrder(Book):
 
-    def __init__(self, job=None, shipment=None, job_shipment=None, **kwargs):
+    def __init__(self, job=None, shipment=None, job_shipment=None, sheet_name='WorkOrders_Template', **kwargs):
         if job and shipment:
             job_shipment = '{}-{}'.format(job, int(shipment))
         self.job_shipment = job_shipment
@@ -24,6 +36,11 @@ class WorkOrder(Book):
             if not exists(self.year_folder):
                 makedirs(self.year_folder)
             self.save(self.file)
+
+        self.sheet = self.sheets[sheet_name]
+
+        self.header = HeaderParser(sheet=self.sheet, header_range='A2')
+        header.add_header_aliases(HEADER_ALIASES)
 
     def init_file(self, file, **kwargs):
         super().__init__(file, **kwargs)

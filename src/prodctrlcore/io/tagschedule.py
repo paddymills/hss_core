@@ -88,7 +88,7 @@ class TagSchedSheet:
                 continue
 
             row = self.header.parse_row(self_row)
-            for key, value in kwargs:
+            for key, value in kwargs.items():
                 if self_row.get_item(key) != value:
                     break  # kwargs for-loop
 
@@ -107,7 +107,7 @@ class TagSchedSheet:
         row = list()
 
         self.header.clear_parsed()
-        for key, value in kwargs:
+        for key, value in kwargs.items():
             index = self.header.get_index(key)
 
             try:
