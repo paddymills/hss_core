@@ -36,6 +36,18 @@ class TagSchedule(Book):
         self.flanges = WebFlangeSheet(self.sheets['FLANGES'])
         self.code = CodeDeliverySheet(self.sheets['CODE DELIVERY'])
 
+    @param
+    def year_folder(self):
+        job_year = '20' + self.job_shipment[1:3].zfill(2)
+
+        return join(TAGSCHED_DIR, job_year)
+
+    @param
+    def file(self):
+        xl_file = '{}.xls'.format(self.job_shipment)
+
+        return join(TAGSCHED_DIR, self.year_folder, xl_file)
+
 
 class TagSchedSheet:
 
