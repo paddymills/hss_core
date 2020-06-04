@@ -1,12 +1,8 @@
 
-from os import makedirs
-from os.path import join, exists
-from xlwings import Book
-
-from .header import HeaderParser
+from .xljobfile import JobBookReader
 
 WORKORDER_DIR = r"\\hssieng\DATA\HS\SAP - Material Master_BOM\SigmaNest Work Orders"
-TEMPLATE = join(WORKORDER_DIR, "TagSchedule_Template.xls")
+TEMPLATE = "TagSchedule_Template.xls"
 
 HEADER_ALIASES = {
     'Part': 'ItemName',
@@ -21,38 +17,26 @@ HEADER_ALIASES = {
 }
 
 
-class WorkOrder(Book):
+class WorkOrder(JobBookReader):
 
-    def __init__(self, job=None, shipment=None, job_shipment=None, sheet_name='WorkOrders_Template', **kwargs):
-        if job and shipment:
-            job_shipment = '{}-{}'.format(job, int(shipment))
-        self.job_shipment = job_shipment
-        assert self.job_shipment is not None
+    def __init__(self, job, shipment=None, **kwargs):
+        kwargs.update(
+            directory=WORKORDER_DIR,
+            template=TEMPLATE,
+            folder_suffix=" Work Orders Created"
+        )
 
-        if exists(self.file):
-            self.init_file(self.file, **kwargs)
-        else:
-            self.init_file(TEMPLATE, **kwargs)
-            if not exists(self.year_folder):
-                makedirs(self.year_folder)
-            self.save(self.file)
+        super().__init__(job, shipment, **kwargs)
 
-        self.sheet = self.sheets[sheet_name]
+    def get_data_sheet(self):
+        _sheet = self.sheet('WorkOrders_Template', header_range='A2')
+        _sheet.header.add_header_aliases(HEADER_ALIASES)
 
-        self.header = HeaderParser(sheet=self.sheet, header_range='A2')
-        header.add_header_aliases(HEADER_ALIASES)
+        return _sheet
 
-    def init_file(self, file, **kwargs):
-        super().__init__(file, **kwargs)
 
-    @param
-    def year_folder(self):
-        job_year = '20' + self.job_shipment[1:3].zfill(2)
-
-        return join(WORKORDER_DIR, job_year + " Work Orders Created")
-
-    @param
-    def file(self):
-        xl_file = '{}.xls'.format(self.job_shipment)
-
-        return join(WORKORDER_DIR, self.year_folder, xl_file)
+def get_all_workorder_data_for_structure(structure):
+    # TODO: glob to find files
+    # get all data for work orders for a given structure
+    # i.e. '1170082C'
+    pass
