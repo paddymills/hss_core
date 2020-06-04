@@ -25,7 +25,7 @@ class HeaderParser:
         In these methods, trailing ids (if applicable) must match
     """
 
-    def __init__(self, sheet, header=None, header_range="A1", expand_header=True):
+    def __init__(self, header=None, sheet=None, header_range="A1", expand_header=True):
 
         if header:
             self.header = header
