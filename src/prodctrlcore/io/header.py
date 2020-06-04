@@ -1,7 +1,7 @@
 
 import inflection
 
-from xlwings import sheet
+from xlwings import Range
 from re import compile as regex
 
 PARAM_RE = regex(r'(?P<text>[a-zA-Z_]+)(?P<id>[0-9]*)')
@@ -25,11 +25,17 @@ class HeaderParser:
         In these methods, trailing ids (if applicable) must match
     """
 
-    def __init__(self, sheet, header_range="A1"):
-        self.sheet = sheet
+    def __init__(self, sheet, header=None, header_range="A1", expand_header=True):
 
-        self.range = self.sheet.range(header_range).expand('right')
-        self.header = self.range.value
+        if header:
+            self.header = header
+        else:
+            rng = sheet.range(header_range)
+            if expand_header:
+                rng = rng.expand('right')
+
+            self.header = rng.value
+
         self.indexes = dict()
         self._init_header()
 
@@ -53,6 +59,9 @@ class HeaderParser:
             self.indexes[to_(column)] = index
 
     def parse_row(self, row):
+        if type(row) is Range:
+            row = row.value
+
         self.row = row
 
     def infer_key(self, key):
