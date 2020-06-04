@@ -42,13 +42,18 @@ class HeaderParser:
         self.row = None
 
     def __getattr__(self, name):
-        try:
-            index = self.indexes[name]
-        except KeyError:
-            index = self.infer_key(name)
+        index = self.get_index(name)
 
         if self.row:
             return self.row[index]
+
+        return index
+
+    def get_index(self, key):
+        try:
+            index = self.indexes[key]
+        except KeyError:
+            index = self.infer_key(key)
 
         return index
 
@@ -69,7 +74,9 @@ class HeaderParser:
         if type(row) is Range:
             row = row.value
 
-        self.row = row
+        self.row = ParsedRow(row, self)
+
+        return self.row
 
     def infer_key(self, key):
         key = key.lower()
@@ -108,6 +115,21 @@ class HeaderParser:
                     return self.indexes[col]
 
         raise KeyError
+
+
+class ParsedRow:
+
+    def __init__(self, row, header):
+        self.row = row
+        self.header = header
+
+    def __getattr__(self, name):
+        return self.get_item(name)
+
+    def get_item(self, header_val):
+        index = self.header.get_index(header_val)
+
+        return self.row[index]
 
 
 def to_(text):
