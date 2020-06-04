@@ -5,8 +5,6 @@ core read, write and parsing utilities
 - workorder
   - document parsing (unsubtotalled documents)
 - schedule
-  - parsing
+  - Distributions
 - tagschedule
-  - sheet updating functions
-- monday
-  - logging
+  - sheet data updating functions
