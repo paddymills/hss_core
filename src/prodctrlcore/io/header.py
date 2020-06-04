@@ -78,6 +78,9 @@ class HeaderParser:
 
         return self.row
 
+    def clear_parsed(self):
+        self.row = None
+
     def infer_key(self, key):
         key = key.lower()
 
