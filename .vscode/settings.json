@@ -6,6 +6,7 @@
     "HSSI",
     "NOCUT",
     "NOKERF",
+    "Sched",
     "TAGSCHED",
     "flgdata",
     "getenv",

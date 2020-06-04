@@ -3,6 +3,8 @@ from os import makedirs
 from os.path import join, exists
 from xlwings import Book
 
+from .header import HeaderParser
+
 TAGSCHED_DIR = r"\\hssfileserv1\HSSShared\HSSI Lean\CAD-CAM\TagSchedule"
 TEMPLATE = join(TAGSCHED_DIR, "TagSchedule_Template.xls")
 
@@ -30,38 +32,96 @@ class TagSchedule(Book):
 
     def init_file(self, file, **kwargs):
         super().__init__(file, **kwargs)
+        self.webs = WebFlangeSheet(self.sheets['WEBS'])
+        self.flanges = WebFlangeSheet(self.sheets['FLANGES'])
+        self.code = CodeDeliverySheet(self.sheets['CODE DELIVERY'])
 
-    @property
-    def webs(self):
-        header = self.sheets['WEBS'].range("C1:N1").value
-        header += self.sheets['WEBS'].range("O2:Q2").value
 
-        return self.sheets['WEBS'].range("C4:P4").expand('down').value
+class TagSchedSheet:
 
-    @webs.setter
-    def webs(self, value):
-        # update webs tab
-        pass
+    def __init__(self, sheet, header_rng, first_data_row=2):
+        if type(header_rng) is not list:
+            header_rng = [header_rng]
 
-    @property
-    def flanges(self):
-        header = self.sheets['FLANGES'].range("C1:N1").value
-        header += self.sheets['FLANGES'].range("O2:Q2").value
+        _header = list()
+        for rng in header_rng:
+            _header.extend(sheet.range(rng).value)
+        self.header = HeaderParser(header=_header)
 
-        return self.sheets['FLANGES'].range("C4:P4").expand('down').value
+        self.min_col = min([sheet.range(x).row for x in header_rng])
+        self.max_col = max([sheet.range(x).last_cell.row for x in header_rng])
 
-    @flanges.setter
-    def flanges(self, value):
-        # update flanges tab
-        pass
+        self.sheet = sheet
+        self.first_data_row = first_data_row
 
-    @property
-    def code_delivery(self):
-        header = self.sheets['CODE DELIVERY'].range("A1:G1").value
+    def _data_range(self):
+        start = (self.first_data_row, self.min_col)
+        end = (self.first_data_row, self.max_col)
+        return self.sheet.range(start, end).expand('down')
 
-        return self.sheets['CODE DELIVERY'].range("A2:G2").expand('down').value
+    def get_rows(self):
+        return self._data_range().value
 
-    @code_delivery.setter
-    def code_delivery(self, value):
-        # update code delivery tab
-        pass
+    def add_row(self, row=None, **kwargs):
+        if row is None:
+            row = self.construct_row_from_kwargs(kwargs)
+
+        # check if row already exists
+        for self_row in self.get_rows():
+
+            # essentially, self_row.startswith(row)
+            if row:
+                if self_row[:len(row)] == row:
+                    break
+                continue
+
+            row = self.header.parse_row(self_row)
+            for key, value in kwargs:
+                if self_row.get_item(key) != value:
+                    break  # kwargs for-loop
+
+            # all kwargs matched row -> row exists in sheet
+            else:
+                break  # rows for-loop
+
+        # row not in sheet
+        else:
+            row_index = self._data_range().last_cell.row + 1
+
+            col_index = self._data_range().column
+            self.sheet.range(row_index, col_index).value = row
+
+    def construct_row_from_kwargs(self, kwargs):
+        row = list()
+
+        self.header.clear_parsed()
+        for key, value in kwargs:
+            index = self.header.get_index(key)
+
+            try:
+                row[index] = value
+            except IndexError:
+                while len(row) < index:
+                    row.append(None)
+                row.append(key)
+
+        return row
+
+
+class WebFlangeSheet(TagSchedSheet):
+
+    def __init__(self, sheet):
+        SHEET_KWARGS = dict(
+            header_range=['C1:N1', 'O2:N2'],
+            first_data_row=4,
+        )
+        super().__init__(sheet, **SHEET_KWARGS)
+
+
+class CodeDeliverySheet(TagSchedSheet):
+
+    def __init__(self, sheet):
+        SHEET_KWARGS = dict(
+            header_range='A2:G2',
+        )
+        super().__init__(sheet, **SHEET_KWARGS)
