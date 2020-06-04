@@ -87,7 +87,7 @@ class HeaderParser:
             if key_id == col_id:
                 if semi_sequential_match(key_text, col_text):
                     if match:
-                        raise Exception(
+                        raise KeyError(
                             "Multiple matching keys found when inferring column headers. Key={}".format(key))
                     return self.indexes[col]
 
