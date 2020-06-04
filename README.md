@@ -3,10 +3,11 @@ core read, write and parsing utilities
 # TODO:
 
 - workorder
-  - document parsing (unsubtotalled documents)
-  - combine with tagschedule (parent class needed)
+  - structure globbing
 - schedule
+  - use job parser
   - Distributions
 - tagschedule
   - sheet data updating functions
-  - combine with workorder (parent class needed)
+- data format parsers
+  - move to custom folder (io is for abstract io classes)
