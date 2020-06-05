@@ -1,3 +1,5 @@
+<!-- cSpell:disable -->
+
 core read, write and parsing utilities
 
 # TODO:
@@ -9,3 +11,5 @@ core read, write and parsing utilities
   - Distributions
 - flangedata
   - add support for header parser
+
+<!-- cSpell:enable -->
