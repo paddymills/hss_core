@@ -1,5 +1,5 @@
 
-from prodctrlcore.io.jobfile import JobBookReader
+from prodctrlcore.io import JobBookReader
 
 WORKORDER_DIR = r"\\hssieng\DATA\HS\SAP - Material Master_BOM\SigmaNest Work Orders"
 TEMPLATE = "TagSchedule_Template.xls"

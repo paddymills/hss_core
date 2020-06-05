@@ -10,7 +10,7 @@ from datetime import datetime
 from re import compile as regex
 
 from prodctrlcore.io import schedule
-from prodctrlcore.monday.custom import DevelopmentJobBoard, JobBoard
+from prodctrlcore.monday import DevelopmentJobBoard, JobBoard
 from prodctrlcore.utils import CountingIter
 
 from collections import defaultdict

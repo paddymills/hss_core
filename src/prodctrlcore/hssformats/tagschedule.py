@@ -1,5 +1,5 @@
 
-from prodctrlcore.io.jobfile import JobBookReader
+from prodctrlcore.io import JobBookReader
 
 TAGSCHED_DIR = r"\\hssfileserv1\HSSShared\HSSI Lean\CAD-CAM\TagSchedule"
 TEMPLATE = "TagSchedule_Template.xls"
