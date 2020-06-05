@@ -8,6 +8,8 @@ import logging
 from glob import glob
 from types import SimpleNamespace
 
+from prodctrlcore.io import HeaderParser
+
 ENG_DIR = r"\\hssieng\DATA\HS\JOBS"
 part_mark_pattern = re.compile(r'[a-zA-Z][0-9]+[a-zA-Z]+')
 
@@ -35,22 +37,6 @@ skip.types = [      # cSpell:disable
     'HS BOLT',
     'NUT',
 ]                   # cSpell:enable
-
-bom_header = SimpleNamespace()
-bom_header.QTY = 'QTY EA.'
-bom_header.MARK = 'MARK'
-bom_header.TYPE = 'COMM'
-bom_header.THK = 'DESCRIPTION'
-bom_header.THK_TO_WID_OFFSET = 2
-bom_header.LEN = 'LENGTH'
-bom_header.LEN_INCHES_OFFSET = 1
-bom_header.SPEC = 'SPEC'
-bom_header.GRADE = 'GRADE'
-bom_header.TEST = 'TEST'
-bom_header.REMARKS = 'REMARKS'
-bom_header.ITEM = 'ITEM'
-bom_header.WT = 'SHIP WT. EA. (LBS|KG)'
-bom_header.WT_startswith = 'SHIP WT. EA.'
 
 eng_data_maps = SimpleNamespace()
 eng_data_maps.THICKNESS = {
@@ -167,9 +153,10 @@ class BomDataCollector:
         assemblies = list()
 
         previous_line_type = 'ASSEMBLY'
-        header = self.parse_header(sheet.range("B2:AB2").value)
+        header_rng = sheet.range("B2:AB2").value
+        header = self.process_header(HeaderParser(header=header_rng))
         for row in sheet.range("B4:AB{}".format(end)).value:
-            line = self.parse_line(header, row)
+            line = self.process_line(header.parse_row(row))
 
             if skip_bom_processing:
                 continue
@@ -194,69 +181,54 @@ class BomDataCollector:
                     del self.parts[line.mark]
                 previous_line_type = 'PART'
 
-    def parse_header(self, header):
-        header_mapping = SimpleNamespace()
+    def process_header(self, header):
+        ALIASES = dict(
+            name='MARK',
+            type='COMM',
+            thickness='Description',
+            thk='Description',
+            weight='SHIP WT'
+        )
 
-        header_mapping.QTY = header.index(bom_header.QTY)
-        header_mapping.MARK = header.index(bom_header.MARK)
-        header_mapping.TYPE = header.index(bom_header.TYPE)
-        header_mapping.THK = header.index(bom_header.THK)
-        header_mapping.WID = header.index(bom_header.WID)
-        header_mapping.LEN = header.index(bom_header.LEN)
-        header_mapping.SPEC = header.index(bom_header.SPEC)
-        header_mapping.GRADE = header.index(bom_header.GRADE)
-        header_mapping.TEST = header.index(bom_header.TEST)
-        header_mapping.REMARKS = header.index(bom_header.REMARKS)
-        header_mapping.ITEM = header.index(bom_header.ITEM)
-        header_mapping.QTY = header.index(bom_header.QTY)
+        header.add_header_aliases(ALIASES)
+        header.indexes['Width'] = header.thk + 2
+        header.indexes['Length Inches'] = header.length + 1
 
-        for column in header:
-            if column.startswith(bom_header.WT_startswith):
-                if "LBS" in column:
-                    header_mapping.units = "IMPERIAL"
-                elif "KG" in column:
-                    header_mapping.units = "METRIC"
-                break
+        if "LBS" in header.weight:
+            header.units = "IMPERIAL"
+        elif "KG" in header.weight:
+            header.units = "METRIC"
 
-        return header_mapping
+    def process_line(self, line):
 
-    def parse_line(self, header, line):
-        qty = line[header.QTY]
-        mark = line[header.MARK]
-        type = line[header.TYPE]
-
-        if mark is None or type in skip.types:
+        if line.mark is None or line.type in skip.types:
             return None
 
         if type is None:    # ASSEMBLY
 
-            return Assembly(name=mark, qty=qty)
+            return Assembly(line)
 
         # ~~~~~~~~~~~~~~~~~~ PART (not previously parsed/created) ~~~~~~~~~~~~~~~~~~~~~~~
-        if mark not in self.parts.keys():
-            thk = line[header.THK]
-            width = line[header.THK + bom_header.THK_TO_WID_OFFSET]
-
+        if line.mark not in self.parts.keys():
             # length
-            if header.units == 'IMPERIAL':
-                _feet = line[header.LEN]
-                _inches = line[header.LEN + bom_header.LEN_INCHES_OFFSET]
+            if line.header.units == 'IMPERIAL':
+                _feet = line.length
+                _inches = line.length_inches
                 length = _feet * 12 + _inches
             else:
-                length = line[header.LEN]
+                length = line.length
 
-            spec = line[header.SPEC]
-            if spec in eng_data_maps.GRADE.keys():
-                spec, grade, test = eng_data_maps.GRADE[spec]
-            else:
-                grade = line[header.GRADE]
-                test = line[header.TEST]
+            if line.spec in eng_data_maps.GRADE.keys():
+                _spec, _grade, _test = eng_data_maps.GRADE[line.spec]
+                line.spec = _spec
+                line.grade = _grade
+                line.test = _test
+
             # data.remarks = line[header.REMARKS]
-            item = line[header.ITEM]
-            self.parts[mark] = Part(mark=mark, thk=thk, wid=width,
-                                    len=length, spec=spec, grade=grade, test=test, item=item)
+            self.parts[line.mark] = Part(
+                parsed_row=line, len=length, length=length)
 
-        return self.parts[mark]
+        return self.parts[line.mark]
 
 
 class Part:
@@ -264,14 +236,19 @@ class Part:
     def __init__(self, *args, **kwargs):
         self.assemblies = list()    # assemblies that part occurs on
 
-        for attr, value in kwargs.items():
-            setattr(self, attr, value)
+        self.__dict__.update(kwargs)
 
         if type(self.thk) is str:
             self.thk = eng_data_maps.THICKNESS[self.thk]
 
     def __repr__(self):
         return "[{qty}]|{part} ({grade})".format(qty=self.qty, part=self.name, grade=self.material_grade)
+
+    def __getattr__(self, attr):
+        if attr in self.__dict__:
+            return self.__dict__[attr]
+
+        return getattr(self.parsed_row, attr)
 
     @property
     def material_grade(self):
@@ -313,9 +290,15 @@ class Assembly:
 
     def __init__(self, *args, **kwargs):
         self.parts = list()
-        self.mark = kwargs['name']
-        self.qty = kwargs['qty']
+
+        self.__dict__.update(kwargs)
 
     def add_part(self, part, qty):
         part.add_assembly(self, qty)
         self.parts.append(part)
+
+    def __getattr__(self, attr):
+        if attr in self.__dict__:
+            return self.__dict__[attr]
+
+        return getattr(self.parsed_row, attr)

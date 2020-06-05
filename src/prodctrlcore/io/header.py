@@ -130,6 +130,13 @@ class ParsedRow:
     def __getattr__(self, name):
         return self.get_item(name)
 
+    def __setattr__(self, name, value):
+        try:
+            index = self.header.get_index(name)
+            self._data[index] = value
+        except KeyError:
+            self.__dict__[name] = value
+
     def get_item(self, header_val):
         index = self.header.get_index(header_val)
 
