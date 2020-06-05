@@ -18,7 +18,7 @@ class FlangeData:
 
         self.get_data()
 
-    def get_data(self):
+    def get_data(self, ):
         self.data = read_excel(self.flg_data_file)
 
     def generate_flg_data(self):

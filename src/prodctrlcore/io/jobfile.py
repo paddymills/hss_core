@@ -7,15 +7,19 @@ from re import compile as regex
 
 from .header import HeaderParser
 
-WORKORDER_DIR = r"\\hssieng\DATA\HS\SAP - Material Master_BOM\SigmaNest Work Orders"
-TAGSCHED_DIR = r"\\hssfileserv1\HSSShared\HSSI Lean\CAD-CAM\TagSchedule"
-TEMPLATE = join(TAGSCHED_DIR, "TagSchedule_Template.xls")
 
 JOBSHIP_RE = regex(
     r"1?(?P<year>\d{2})(?P<id>\d{4})(?P<structure>[a-zA-Z]?)-(?P<shipment>\d{0,2})")
 
 
 class JobBookReader(Book):
+    """
+        Excel Book reader for jobs that are stored by year
+        i.e. directory > 2020 > Job-Shipment.xls
+
+        if file does not exist,
+        template file will be created and saved in place
+    """
 
     def __init__(self, job, shipment=None, **kwargs):
         groups = JOBSHIP_RE.match(job).groupdict()
