@@ -7,7 +7,5 @@ core read, write and parsing utilities
 - schedule
   - use job parser
   - Distributions
-- tagschedule
-  - sheet data updating functions
-- data format parsers
-  - move to custom folder (io is for abstract io classes)
+- flangedata
+  - add support for header parser
