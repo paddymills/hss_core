@@ -166,8 +166,11 @@ class BomDataCollector:
                     while len(assemblies) > 0:
                         _assembly = assemblies.pop()
                         self.bom[_assembly.mark] = _assembly
+
                     previous_line_type = 'ASSEMBLY'
+
                 assemblies.append(line)
+
             elif type(line) is Part:
                 is_main_component = (not part_mark_pattern.match(line.mark))
                 for assembly in assemblies:

@@ -72,9 +72,12 @@ class HeaderParser:
             self.add_header_alias(k, v)
 
     def add_header_alias(self, column, header_val):
-        index = self.get_index(header_val)
+        try:
+            index = self.get_index(header_val)
 
-        self.add_column_index(column, index)
+            self.add_column_index(column, index)
+        except KeyError:
+            pass
 
     def parse_row(self, row):
         if type(row) is Range:
@@ -136,6 +139,13 @@ class ParsedRow:
             self._data[index] = value
         except KeyError:
             self.__dict__[name] = value
+
+    def __eq__(self, other):
+        for i in self.header.indexes.values():
+            if self._data[i] != other._data[i]:
+                return False
+
+        return True
 
     def get_item(self, header_val):
         index = self.header.get_index(header_val)

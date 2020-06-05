@@ -5,11 +5,31 @@ from xlwings import Book, Sheet
 
 from re import compile as regex
 
-from .header import HeaderParser
+from . import HeaderParser, ParsedRow
 
 
 JOBSHIP_RE = regex(
-    r"1?(?P<year>\d{2})(?P<id>\d{4})(?P<structure>[a-zA-Z]?)-(?P<shipment>\d{0,2})")
+    r"1?(?P<year>\d{2})(?P<id>\d{4})(?P<structure>[a-zA-Z]?)-?(?P<shipment>\d{0,2})")
+
+
+class JobParser:
+
+    def __init__(self, job, shipment=1, assign_to=None):
+        match = JOBSHIP_RE.match(job)
+
+        if match is None:
+            raise ValueError(
+                "[{}] does not match expected pattern".format(job))
+
+        groups = match.groupdict()
+
+        self.job = '1{year}{id}{structure}'.format(**groups)
+        self.job_year = '20{year}'.format(**groups)
+        self.shipment = int(groups['shipment'] or shipment)
+
+        # add to other objects attributes
+        if assign_to:
+            assign_to.__dict__.update(self.__dict__)
 
 
 class JobBookReader(Book):
@@ -22,17 +42,14 @@ class JobBookReader(Book):
     """
 
     def __init__(self, job, shipment=None, **kwargs):
-        groups = JOBSHIP_RE.match(job).groupdict()
-
-        self.job = '1{year}{id}{structure}'.format(**groups)
-        self.job_year = '20{year}'.format(**groups)
-
-        self.shipment = int(groups['shipment'] or shipment)
+        JobParser(job, shipment, assign_to=self)
 
         self.job_shipment = '{}-{}'.format(self.job, self.shipment)
         self.proper_job_shipment = '{}-{:0>2}'.format(self.job, self.shipment)
 
-        self.suffix = kwargs.get('folder_suffix', '')
+        self.folder_suffix = kwargs.get('folder_suffix', '')
+        self.file_suffix = kwargs.get('file_suffix', '')
+
         self.root_dir = kwargs.get('directory')
         self.template = join(self.root_dir, kwargs.get('template'))
 
@@ -49,11 +66,11 @@ class JobBookReader(Book):
 
     @property
     def year_folder(self):
-        return join(self.root_dir, self.job_year + self.suffix)
+        return join(self.root_dir, self.job_year + self.folder_suffix)
 
     @property
     def file(self):
-        xl_file = '{}.xls'.format(self.job_shipment)
+        xl_file = '{}{}.xls'.format(self.job_shipment, self.file_suffix)
 
         return join(self.root_dir, self.year_folder, xl_file)
 
@@ -109,42 +126,52 @@ class JobSheetReader(Sheet):
     def get_rows(self):
         return self._data_range().value
 
-    def add_row(self, row=None, **kwargs):
-        if row is None:
-            row = self.construct_row_from_kwargs(kwargs)
+    def iter_rows(self):
+        for row in self.get_rows():
+            yield self.header.parse_row(row)
+
+    def add_row(self, row=None, compare_cols=list(), **kwargs):
+        if type(row) is ParsedRow:
+            new_row = row
+        else:
+            new_row = self.construct_row(row, **kwargs)
+
+        # in case using compare_cols (only need to do this one once)
+        new_cols = map(new_row.get_item, compare_cols)
 
         # check if row already exists
-        for self_row in self.get_rows():
+        for self_row in self.iter_rows():
 
-            # essentially, self_row.startswith(row)
-            if row:
-                if self_row[:len(row)] == row:
+            # compares selected columns to compare
+            if compare_cols:
+                self_cols = map(self_row.get_item, compare_cols)
+
+                if new_cols == self_cols:
                     break
-                continue
 
-            # all kwargs matched row -> row exists in sheet
-            else:
-                break  # rows for-loop
+            # compares all indexed columns
+            elif self_row == new_row:
+                break
 
         # row not in sheet
         else:
             row_index = self._data_range().last_cell.row + 1
 
             col_index = self._data_range().column
-            self.range(row_index, col_index).value = row
+            self.range(row_index, col_index).value = new_row._data
 
-    def construct_row_from_kwargs(self, kwargs):
-        row = list()
+    def construct_row(self, row=None, **kwargs):
+        if row:
+            return ParsedRow(row, self.header)
 
-        self.header.clear_parsed()
+        # construct row from scratch
+        max_index = max(self.header.indexes.values())
+        blanks = [None] * (max_index + 1)
+
+        row = ParsedRow(blanks, self.header)
+
         for key, value in kwargs.items():
             index = self.header.get_index(key)
-
-            try:
-                row[index] = value
-            except IndexError:
-                while len(row) < index:
-                    row.append(None)
-                row.append(key)
+            row[index] = value
 
         return row
