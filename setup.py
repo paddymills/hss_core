@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='prodctrlcore',
-    version="0.5.2-beta",
+    version="0.5.3-beta",
     packages=find_packages("src"),
     package_dir={"": "src"},
     include_package_data=True,
