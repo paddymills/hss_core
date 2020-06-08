@@ -111,8 +111,9 @@ def update_job_board(jobs=None):
         jobs = schedule.get_job_ship_dates(DATA_FILE)
 
     # update monday.com board
-    iter = CountingIter(jobs.items(), total=True)
-    for job, kwargs in jobs.items():
+    _list = list(jobs.items())
+    iter = CountingIter(_list, total=True)
+    for job, kwargs in iter:
         job_board.update_job_data(job, **kwargs)
 
 

@@ -26,6 +26,7 @@ def get_job_ship_dates(xl_file, data_connection_name="High Steel Scheduling"):
     # Early Start and Main Start dates
     data = wb.sheets['Dates'].range("DATES_HEADER").expand('down').value
     iter = CountingIter(data, "Reading Dates")
+    next(iter)
     for job, early_start, main_start in iter:
         jobs[job]['early_start'] = early_start
         jobs[job]['main_start'] = main_start
@@ -33,12 +34,14 @@ def get_job_ship_dates(xl_file, data_connection_name="High Steel Scheduling"):
     # Project Manager
     data = wb.sheets['PM'].range("PM_HEADER").expand('down').value
     iter = CountingIter(data, "Reading PM's")
+    next(iter)
     for job, pm in iter:
         jobs[job]['pm'] = pm
 
     # Products/Types
     data = wb.sheets['Products'].range("PRODUCTS_HEADER").expand('down').value
     iter = CountingIter(data, "Reading Products")
+    next(iter)
     prev_job, products = None, list()
     for job, product in iter:
         if job != prev_job:
@@ -50,6 +53,7 @@ def get_job_ship_dates(xl_file, data_connection_name="High Steel Scheduling"):
     # Fab Bays
     data = wb.sheets['Bays'].range("BAYS_HEADER").expand('down').value
     iter = CountingIter(data, "Reading Bays")
+    next(iter)
     prev_job, bays = None, list()
     for job, cc in iter:
         if job != prev_job:
