@@ -43,10 +43,13 @@ def get_job_ship_dates(xl_file, data_connection_name="High Steel Scheduling"):
     iter = CountingIter(data, "Reading Products")
     next(iter)
     prev_job, products = None, list()
-    for job, product in iter:
+    for job, product, date in iter:
         if job != prev_job:
             jobs[prev_job]['product'] = ','.join(products)
             prev_job, products = job, list()
+
+        if product == 'S' and jobs[job]['main_start'] is None:
+            jobs[job]['main_start']
 
         products.append(product)
 
