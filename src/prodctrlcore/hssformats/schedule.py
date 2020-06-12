@@ -48,8 +48,8 @@ def get_job_ship_dates(xl_file, data_connection_name="High Steel Scheduling"):
             jobs[prev_job]['product'] = ','.join(products)
             prev_job, products = job, list()
 
-        if product == 'S' and jobs[job]['main_start'] is None:
-            jobs[job]['main_start']
+        if product == 'S' and jobs[prev_job]['main_start'] is None:
+            jobs[job]['main_start'] = date
 
         products.append(product)
 

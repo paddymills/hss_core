@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 from re import compile as regex
 
-from prodctrlcore.io import schedule
+from prodctrlcore.hssformats import schedule
 from prodctrlcore.monday import DevelopmentJobBoard, JobBoard
 from prodctrlcore.utils import CountingIter
 
@@ -45,6 +45,8 @@ def init_argparser():
 
 
 def main():
+    global JobBoardType
+
     args = init_argparser()
 
     init_str = "\n\n"

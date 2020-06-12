@@ -94,11 +94,17 @@ class JobBoard(MondayBoardClient):
         if job in self.job_ids:
             return self.job_ids[job]
 
+        job_without_structure = JOB_FORMAT.format(
+            *JOB_REGEX.match(job).groups())
+
         # JOB_REGEX = re.compile("[A-Z]-([0-9]{7})[A-Z]?-([0-9]{1,2})")
         # JOB_FORMAT = "{}-{:0>2}"
 
         job_without_structure = JOB_FORMAT.format(
             *JOB_REGEX.match(job).groups())
+        if "D-{}".format(job_without_structure) in self.job_ids:
+            return self.job_ids["D-{}".format(job_without_structure)]
+
         for _monday_job, _id in self.job_ids.items():
             match = JOB_REGEX.match(_monday_job)
             if match:
