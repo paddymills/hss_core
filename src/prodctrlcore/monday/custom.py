@@ -44,6 +44,7 @@ class JobBoard(MondayBoardClient):
         )
 
         self.init_job_board()
+        logger.info("{} board initialized".format(init_kwargs['board_name']))
 
     def init_job_board(self):
         response = self.execute('get_jobs', group_ids=self.groups)
