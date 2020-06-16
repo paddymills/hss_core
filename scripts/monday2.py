@@ -6,8 +6,11 @@ from prodctrlcore.hssformats import schedule
 from prodctrlcore.utils import CountingIter
 
 import re
+import logging
 
 from os.path import join, dirname, realpath
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = dirname(realpath(__file__))
 DATA_FILE = join(BASE_DIR, "data", "Job Ship Dates.xlsx")
@@ -37,16 +40,13 @@ def main():
 
     keys = list(jobs.keys())
     for key in keys:
-        val = jobs[key]
-
         without_struct = '-'.join(JOB_REGEX.match(key).groups())
-        jobs[without_struct] = val
+        jobs[without_struct] = jobs[key]
         del jobs[key]
 
     client = MondayClient('pimiller@high.net', TOKEN, TOKEN)
     board = client.get_board(name='Jobs')
 
-    not_in_jobs = list()
     for group in board.get_groups():
         if group.title in SKIP_GROUPS:
             continue
@@ -58,7 +58,7 @@ def main():
 
                 update_vals = list()
                 for k, v in jobs[item.name].items():
-                    id = col_id_map[k]
+                    col_id = col_id_map[k]
                     col_type = col_type_map[k]
 
                     if v is None:
@@ -68,19 +68,16 @@ def main():
                     else:
                         kwargs = {'value': v}
 
-                    col = create_column_value(id, col_type, **kwargs)
+                    col = create_column_value(col_id, col_type, **kwargs)
 
                     update_vals.append(col)
 
                 item.change_multiple_column_values(column_values=update_vals)
+                logger.info("Updating {}: {}".format(
+                    item.name, str(update_vals)))
                 count += 1
             else:
-                not_in_jobs.append(item.name)
-
-    if not_in_jobs:
-        print('\n\nNot in schedule:')
-        for job in sorted(not_in_jobs):
-            print(" - {}".format(job))
+                logger.info("Not in active jobs: {}".format(item.name))
 
 
 if __name__ == "__main__":
