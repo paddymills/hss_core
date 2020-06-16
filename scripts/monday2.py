@@ -1,14 +1,15 @@
 
-from os import getenv
-
-from moncli import MondayClient, create_column_value, ColumnType
-from prodctrlcore.hssformats import schedule
-from prodctrlcore.utils import CountingIter
-
-import re
 import logging
 
+from os import getenv
 from os.path import join, dirname, realpath
+from re import compile as regex
+from argparse import ArgumentParser
+from datetime import datetime
+from moncli import MondayClient, create_column_value, ColumnType
+
+from prodctrlcore.hssformats import schedule
+from prodctrlcore.utils import CountingIter
 
 logger = logging.getLogger(__name__)
 
@@ -17,25 +18,53 @@ DATA_FILE = join(BASE_DIR, "data", "Job Ship Dates.xlsx")
 
 TOKEN = getenv('MONDAY_TOKEN')
 SKIP_GROUPS = ['Jobs Completed Through PC']
-JOB_REGEX = re.compile("([A-Z])-([0-9]{7})[A-Z]?-([0-9]{1,2})")
+JOB_REGEX = regex("([A-Z])-([0-9]{7})[A-Z]?-([0-9]{1,2})")
 
-col_id_map = dict(
-    pm='text',
-    product='text6',
-    bay='text2',
-    early_start='early_start',
-    main_start='date',
+# column mapping to monday
+# column: (id, type)
+col_map = dict(
+    pm=('text', ColumnType.text),
+    product=('text6', ColumnType.text),
+    bay=('text2', ColumnType.text),
+    early_start=('early_start', ColumnType.date),
+    main_start=('date', ColumnType.date),
 )
-col_type_map = dict(
-    pm=ColumnType.text,
-    product=ColumnType.text,
-    bay=ColumnType.text,
-    early_start=ColumnType.date,
-    main_start=ColumnType.date,
-)
+
+
+def init_argparser():
+    parser = ArgumentParser()
+
+    parser.add_argument('-d', '--dev', action='store_true',
+                        help='Execute on development instance')
+    parser.add_argument('-r', '--restore', action='store_true',
+                        help='Execute restore mode')
+
+    return parser.parse_args()
+
+
+def init_logger():
+    timestamp = datetime.now().date().isoformat()
+    LOG_FILE = join(BASE_DIR, "logs", '{}.log'.format(timestamp))
+    logging.basicConfig(filename=LOG_FILE, level=logging.INFO)
 
 
 def main():
+    init_logger()
+    args = init_argparser()
+
+    if args.restore:
+        # restore updates from monday?
+        updates = dict()
+    else:
+        updates = get_update_data()
+
+    if args.dev:
+        process_updates(updates, board_name='Development')
+    else:
+        process_updates(updates)
+
+
+def get_update_data():
     jobs = schedule.get_job_ship_dates(DATA_FILE)
 
     keys = list(jobs.keys())
@@ -44,8 +73,10 @@ def main():
         jobs[without_struct] = jobs[key]
         del jobs[key]
 
+
+def process_updates(jobs, board_name='Jobs'):
     client = MondayClient('pimiller@high.net', TOKEN, TOKEN)
-    board = client.get_board(name='Jobs')
+    board = client.get_board(name=board_name)
 
     for group in board.get_groups():
         if group.title in SKIP_GROUPS:
@@ -58,8 +89,7 @@ def main():
 
                 update_vals = list()
                 for k, v in jobs[item.name].items():
-                    col_id = col_id_map[k]
-                    col_type = col_type_map[k]
+                    col_id, col_type = col_map[k]
 
                     if v is None:
                         kwargs = {}
